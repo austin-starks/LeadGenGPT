@@ -6,7 +6,8 @@ import Db from "./services/db";
 import moment from "moment";
 
 // Add at the top of the file after imports
-const CUSTOM_INSTRUCTION = ""; // Add your custom instruction here for all emails
+const CUSTOM_INSTRUCTION =
+  "Do NOT hallucinate facts. Do NOT hallucinate new features, features being completed, or anything like that.  Do NOT make assumptions about their type of content unless you FOUND that content by searching the web."; // Add your custom instruction here for all emails
 
 // Extract common functionality into reusable functions
 async function displayEmailInfo(email: ColdOutreach): Promise<void> {
@@ -224,7 +225,6 @@ async function handleEmailActions(
         );
         const regeneratedFollowUp = await ColdOutreach.generateFollowUpEmail(
           email.initialEmailId,
-          model,
           newInstructions
         );
 
@@ -266,7 +266,6 @@ async function processEmail(
     // Generate the follow-up email
     const followUpResult = await ColdOutreach.generateFollowUpEmail(
       email.initialEmailId,
-      model,
       customInstructions
     );
 
@@ -372,7 +371,7 @@ async function processSpecificFollowUp(): Promise<void> {
   });
 
   const email = emails[0];
-  const model: ModelEnum = RequestyAiModelEnum.gemini2Flash;
+  const model: ModelEnum = RequestyAiModelEnum.sonarReasoningPro;
   await processEmail(email, model);
 }
 
@@ -412,7 +411,6 @@ async function sendAutomaticFollowUpEmails(): Promise<void> {
       // Generate the follow-up email using custom instruction if available
       const followUpResult = await ColdOutreach.generateFollowUpEmail(
         email.initialEmailId,
-        model,
         CUSTOM_INSTRUCTION
       );
 

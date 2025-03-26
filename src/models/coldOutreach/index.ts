@@ -270,7 +270,10 @@ class ColdOutreach {
           customInstructions
             ? `\n\nAdditional instructions: ${customInstructions}`
             : ""
-        }`,
+        }
+            Their name is ${
+              previousEmail.recipientName
+            }. Address them on a first name basis.`,
       },
     ];
 
