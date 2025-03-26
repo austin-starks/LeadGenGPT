@@ -219,7 +219,6 @@ class ColdOutreach {
    */
   static async generateFollowUpEmail(
     previousEmailId: string,
-    model: ModelEnum = RequestyAiModelEnum.sonarReasoningPro,
     customInstructions?: string
   ) {
     // Find the previous email record
@@ -234,46 +233,61 @@ class ColdOutreach {
 
     const previousEmail = new ColdOutreach(emailDoc);
 
+    // First, use Perplexity to generate the initial content
+    let messages = [
+      {
+        sender: "user",
+        content: `${previousEmail.recipientName}`,
+      },
+    ];
+
+    let request: SendChatMessageRequest = {
+      systemPrompt: COLD_OUTREACH_PROMPT,
+      model: RequestyAiModelEnum.sonarReasoningPro,
+      temperature: 0,
+      messages,
+      preMessage: COLD_OUTREACH_PROMPT_PRE_MESSAGE,
+      promptName: "Cold Outreach Follow-up Email Initial",
+    };
+
+    const requestyServiceClient = new RequestyServiceClient();
+    const perplexityMessage = await requestyServiceClient.sendRequest(request);
+
     // Calculate days since initial email
     const daysSinceInitial = moment().diff(
       moment(previousEmail.initialSentDate),
       "days"
     );
-
-    // Build the prompt
-    let promptContent = `Generate a follow-up email for ${previousEmail.recipientName}, a finance influencer who I sent an initial partnership proposal ${daysSinceInitial} days ago about NexusTrade. Be friendly and not pushy. Reference the initial email content but don't repeat it entirely.`;
-
-    if (customInstructions) {
-      promptContent += `\n\nAdditional instructions: ${customInstructions}`;
-    }
-
-    promptContent += `\n\nHere's the initial email I sent:\n\n${previousEmail.emailContent}`;
-
-    const messages = [
+    // Now use Gemini to refine the content
+    messages = [
       {
         sender: "user",
-        content: promptContent,
+        content: `Days since initial email: ${daysSinceInitial}\n\nPrevious email: ${
+          previousEmail.emailContent
+        }\n\nRefine this follow-up email. Keep the same structure but make it more concise and natural. Make sure to referebce the previous email in the content:\n\n${
+          perplexityMessage.content
+        }${
+          customInstructions
+            ? `\n\nAdditional instructions: ${customInstructions}`
+            : ""
+        }`,
       },
     ];
-    const request: SendChatMessageRequest = {
-      systemPrompt: COLD_OUTREACH_PROMPT,
-      model,
+
+    request = {
+      systemPrompt: HELPFUL_ASSISTANT_PROMPT,
+      model: RequestyAiModelEnum.gemini2Flash,
       temperature: 0,
       messages,
       preMessage: COLD_OUTREACH_PROMPT_PRE_MESSAGE,
-      promptName: "Cold Outreach Follow-up Email",
+      promptName: "Cold Outreach Follow-up Email Refinement",
     };
-    const requestyServiceClient = new RequestyServiceClient();
-    const message = await requestyServiceClient.sendRequest(request);
 
-    // Remove HTML comments and clean up the content
-    let cleanContent = message.content;
-    cleanContent = cleanContent.replace(/<!--[\s\S]*?-->/g, "");
-    cleanContent = cleanContent.replace(/\[\d+\]/g, "");
+    const finalMessage = await requestyServiceClient.sendRequest(request);
 
     // Format the content properly
     const formattedContent = await ColdOutreach.ensureProperBodyTags(
-      cleanContent
+      finalMessage.content
     );
 
     // Generate a subject line for the follow-up email
@@ -283,8 +297,8 @@ class ColdOutreach {
       previousEmail,
       content: formattedContent,
       subject,
-      model,
-      citations: message.citations || [],
+      model: RequestyAiModelEnum.gemini2Flash,
+      citations: finalMessage.citations || [],
     };
   }
 
