@@ -262,9 +262,9 @@ class ColdOutreach {
     messages = [
       {
         sender: "user",
-        content: `Days since initial email: ${daysSinceInitial}\n\nPrevious email: ${
+        content: `\n\Days since initial email: ${daysSinceInitial}\n\nPrevious email: ${
           previousEmail.emailContent
-        }\n\nRefine this follow-up email. Keep the same structure but make it more concise and natural. Make sure to referebce the previous email in the content:\n\n${
+        }\n\nRefine this follow-up email. Keep the same structure but make it more concise and natural. Make sure to reference the previous email in the content and possibly include any new personalized information that explains why I'd want to partner with you:\n\n${
           perplexityMessage.content
         }${
           customInstructions
@@ -309,12 +309,11 @@ class ColdOutreach {
     content: string,
     maxAttempts = 3
   ): Promise<string> {
-    content = content
-      .replace(/<!--[\s\S]*?-->/g, "")
-      .replace(/\[\d+\]/g, "")
-      .replace(/```[\w-]*\n?/g, "")
-      .replace(/<think>.*?<\/think>/gs, "");
-    let cleanContent = content;
+    let cleanContent = content
+      .replaceAll(/<!--[\s\S]*?-->/g, "")
+      .replaceAll(/\[\d+\]/g, "")
+      .replaceAll(/```[\w-]*\n?/g, "")
+      .replaceAll(/<think>.*?<\/think>/gs, "");
     let attempts = 0;
 
     while (
@@ -348,7 +347,11 @@ class ColdOutreach {
       const requestyServiceClient = new RequestyServiceClient();
       const fixedMessage = await requestyServiceClient.sendRequest(request);
 
-      cleanContent = fixedMessage.content;
+      cleanContent = fixedMessage.content
+        .replaceAll(/<!--[\s\S]*?-->/g, "")
+        .replaceAll(/\[\d+\]/g, "")
+        .replaceAll(/```[\w-]*\n?/g, "")
+        .replaceAll(/<think>.*?<\/think>/gs, "");
 
       if (
         cleanContent.trim().startsWith("<body>") &&
