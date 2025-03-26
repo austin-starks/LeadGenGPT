@@ -1,5 +1,5 @@
 import readline from "readline";
-export const DB_LOCATION: "cloud" | "local" = "local";
+export const DB_LOCATION: "cloud" | "local" = "cloud";
 
 export function getUserInput(question: string): Promise<string> {
   const rl = readline.createInterface({

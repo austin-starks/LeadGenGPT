@@ -74,11 +74,17 @@ ts-node src/sendEmails.ts
 
 - **How It Works**:
 
-  - Loads a predefined list of recipients (editable in `sendEmails.ts`).
-  - Generates AI-crafted email content for each recipient.
-  - Prompts you to review and approve each email (`y/yes`, `n/no`, `t/test`, `u/update`, `s/skip`, `cs/change subject`).
-  - In `local` mode (`DB_LOCATION=local`), emails are sent to the address specified in `TEST_EMAIL` for testing.
-  - In `cloud` mode, emails are sent to the actual recipients.
+  - Choose between manual mode and automatic mode
+  - **Manual Mode**:
+    - Loads a predefined list of recipients
+    - Generates AI-crafted email content for each recipient
+    - Prompts you to review and approve each email
+    - Supports various actions (y/yes, n/no, t/test, u/update, s/skip, cs/change subject)
+  - **Automatic Mode**:
+    - Automatically processes all recipients
+    - Shows generated content with 10-second review period
+    - Sends emails without manual intervention
+    - Useful for bulk processing when content quality is consistent
 
 - **Example**:
   ```
@@ -164,6 +170,7 @@ Customize LeadGenGPT by adjusting the following:
 - **AI Prompts**:
   - Edit prompts in `models/coldOutreach.ts` to tailor email generation.
 - **Customizing AI Prompts**:
+
   - Navigate to `src/prompts/coldOutreach.ts`
   - Replace the placeholder sections marked with `[brackets]` with your information:
     - Personal facts and background
@@ -174,6 +181,11 @@ Customize LeadGenGPT by adjusting the following:
   - Modify the email format if needed
   - Keep the HTML structure intact for proper rendering
   - Test the prompt with a few sample recipients to ensure it generates appropriate emails
+
+- **Custom Instructions**:
+  - Set `CUSTOM_INSTRUCTION` at the top of `sendEmails.ts` or `followUp.ts`
+  - When filled, applies to all generated emails without prompting
+  - Leave empty to enable per-email custom instructions
 
 ## Contributing
 

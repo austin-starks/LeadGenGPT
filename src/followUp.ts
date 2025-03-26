@@ -5,6 +5,9 @@ import { ModelEnum, RequestyAiModelEnum } from "./services/GenAiServiceClient";
 import Db from "./services/db";
 import moment from "moment";
 
+// Add at the top of the file after imports
+const CUSTOM_INSTRUCTION = ""; // Add your custom instruction here for all emails
+
 // Extract common functionality into reusable functions
 async function displayEmailInfo(email: ColdOutreach): Promise<void> {
   const daysSinceSent = moment().diff(moment(email.initialSentDate), "days");
@@ -406,11 +409,11 @@ async function sendAutomaticFollowUpEmails(): Promise<void> {
 
       const model: ModelEnum = RequestyAiModelEnum.sonarReasoningPro;
 
-      // Generate the follow-up email without custom instructions
+      // Generate the follow-up email using custom instruction if available
       const followUpResult = await ColdOutreach.generateFollowUpEmail(
         email.initialEmailId,
         model,
-        ""
+        CUSTOM_INSTRUCTION
       );
 
       const followUp: FollowUpEmail = {
@@ -419,7 +422,22 @@ async function sendAutomaticFollowUpEmails(): Promise<void> {
         citations: followUpResult.citations,
       };
 
-      // Send the follow-up email automatically
+      // Display the generated email
+      console.log("\n=== Generated Follow-up Email ===");
+      console.log(`Subject: ${followUp.subject}`);
+      console.log("Content:");
+      console.log(followUp.content);
+      console.log("===============================\n");
+
+      // Add countdown
+      console.log("Sending in:");
+      for (let i = 10; i > 0; i--) {
+        process.stdout.write(`${i}... `);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+      console.log("\n");
+
+      // Send the follow-up email
       await ColdOutreach.sendAndTrackEmail({
         to: email.recipientEmail,
         name: email.recipientName,

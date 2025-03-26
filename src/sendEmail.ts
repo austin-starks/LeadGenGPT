@@ -5,7 +5,84 @@ import Db from "./services/db";
 import { RequestyAiModelEnum } from "./services/GenAiServiceClient";
 
 const PEOPLE: { email: string; name: string }[] = [];
-async function sendEmails() {
+
+async function sendAutomaticEmails() {
+  if (!process.env.SENDGRID_EMAIL) {
+    throw new Error(
+      "SENDGRID_EMAIL is not set. Please set it in the .env file."
+    );
+  }
+  let fromName = process.env.FROM_NAME;
+  if (!fromName) {
+    throw new Error("FROM_NAME is not set. Please set it in the .env file.");
+  }
+
+  console.log("Checking for previously sent emails in database...");
+  const sentEmails = new Set();
+
+  // Find all emails already in the system
+  const existingEmails = await ColdOutreach.findAll();
+  for (const email of existingEmails) {
+    sentEmails.add(email.recipientEmail.toLowerCase());
+  }
+
+  console.log(`Loaded ${sentEmails.size} previously sent emails from database`);
+
+  for (const person of PEOPLE) {
+    try {
+      // Check if we've already sent to this person
+      if (sentEmails.has(person.email.toLowerCase())) {
+        console.log(
+          `Skipping ${person.name} (${person.email}) - email already sent previously`
+        );
+        continue;
+      }
+
+      // Generate email content
+      console.log(`\nGenerating email for ${person.name}...`);
+      const generatedEmail = await ColdOutreach.generateInitialEmail(
+        person.name,
+        RequestyAiModelEnum.sonarReasoningPro
+      );
+
+      // Send the email automatically
+      const recipient =
+        DB_LOCATION === "local" ? process.env.TEST_EMAIL : person.email;
+      if (!recipient) {
+        throw new Error(
+          "TEST_EMAIL is not set. Please set it in the .env file."
+        );
+      }
+
+      await ColdOutreach.sendAndTrackEmail({
+        to: recipient,
+        name: person.name,
+        subject:
+          DB_LOCATION === "local"
+            ? `[TEST] ${generatedEmail.subject}`
+            : generatedEmail.subject,
+        content: generatedEmail.content,
+        fromEmail: process.env.SENDGRID_EMAIL,
+        fromName: fromName,
+        model: generatedEmail.model,
+        bcc: process.env.SENDGRID_EMAIL,
+      });
+
+      console.log(
+        DB_LOCATION === "local"
+          ? `TEST MODE: Email for ${person.name} sent to ${recipient}`
+          : `Email sent to ${person.name} at ${person.email}`
+      );
+    } catch (error) {
+      console.error(`Error processing email for ${person.name}:`, error);
+      console.log("Continuing with next recipient...");
+    }
+  }
+
+  console.log("\nAutomatic email process completed!");
+}
+
+async function sendInteractiveEmails() {
   if (!process.env.SENDGRID_EMAIL) {
     throw new Error(
       "SENDGRID_EMAIL is not set. Please set it in the .env file."
@@ -145,6 +222,25 @@ async function sendEmails() {
         );
       }
     }
+  }
+}
+
+async function sendEmails() {
+  console.log("\n=== NexusTrade Email Sender ===\n");
+
+  const mode = await getUserInput(
+    "Choose mode: (1) Interactive mode, (2) Automatic mode, (3) Exit: "
+  );
+
+  switch (mode) {
+    case "1":
+      await sendInteractiveEmails();
+      break;
+    case "2":
+      await sendAutomaticEmails();
+      break;
+    default:
+      console.log("Exiting script.");
   }
 }
 
