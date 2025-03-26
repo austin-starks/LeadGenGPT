@@ -60,6 +60,47 @@ Before setting up LeadGenGPT, ensure you have the following:
    - Replace placeholder values with your actual credentials (e.g., set `TEST_EMAIL` to your preferred testing email address).
    - Do not commit the `.env` file to your repository. Keep API keys secure!
 
+
+4. **Customizing AI Prompts**:
+
+  - Navigate to `src/prompts/coldOutreach.ts`
+  - Replace the placeholder sections marked with `[brackets]` with your information:
+    - Personal facts and background
+    - Company/product details
+    - Partnership/invitation specifics
+    - Example successful email
+  - Update the LinkedIn URL and name in the template
+  - Modify the email format if needed
+  - Keep the HTML structure intact for proper rendering
+  - Test the prompt with a few sample recipients to ensure it generates appropriate emails
+
+## Configuration
+
+Customize LeadGenGPT by adjusting the following:
+
+- **Database Location**:
+
+  - Set `DB_LOCATION` in `.env` to `"local"` or `"cloud"` to switch databases.
+  - Local mode uses `LOCAL_DB`; cloud mode uses `CLOUD_DB`.
+
+- **AI Service**:
+
+  - Uses Requesty.ai by default (requires `REQUESTY_API_KEY`).
+
+- **Email Sending**:
+
+  - Configure `SENDGRID_API_KEY`, `SENDGRID_EMAIL`, and `TEST_EMAIL` in `.env`.
+  - Modify email logic in `services/emailService.ts` if using a different provider.
+
+- **AI Prompts**:
+  - Edit prompts in `models/coldOutreach.ts` to tailor email generation.
+
+- **Custom Instructions**:
+  - Set `CUSTOM_INSTRUCTION` at the top of `sendEmails.ts` or `followUp.ts`
+  - When filled, applies to all generated emails without prompting
+  - Leave empty to enable per-email custom instructions
+
+
 ## Usage
 
 LeadGenGPT provides three main scripts to manage the lead generation process: sending initial emails, checking statuses, and sending follow-ups. Below are instructions for each.
@@ -148,44 +189,6 @@ ts-node src/followUp.ts
   Action: (s)end, (t)est send, (u)pdate, (c)hange subject, (r)egenerate, (q)uit, (skip): s
   Follow-up email sent to user-b@example.com
   ```
-
-## Configuration
-
-Customize LeadGenGPT by adjusting the following:
-
-- **Database Location**:
-
-  - Set `DB_LOCATION` in `.env` to `"local"` or `"cloud"` to switch databases.
-  - Local mode uses `LOCAL_DB`; cloud mode uses `CLOUD_DB`.
-
-- **AI Service**:
-
-  - Uses Requesty.ai by default (requires `REQUESTY_API_KEY`).
-
-- **Email Sending**:
-
-  - Configure `SENDGRID_API_KEY`, `SENDGRID_EMAIL`, and `TEST_EMAIL` in `.env`.
-  - Modify email logic in `services/emailService.ts` if using a different provider.
-
-- **AI Prompts**:
-  - Edit prompts in `models/coldOutreach.ts` to tailor email generation.
-- **Customizing AI Prompts**:
-
-  - Navigate to `src/prompts/coldOutreach.ts`
-  - Replace the placeholder sections marked with `[brackets]` with your information:
-    - Personal facts and background
-    - Company/product details
-    - Partnership/invitation specifics
-    - Example successful email
-  - Update the LinkedIn URL and name in the template
-  - Modify the email format if needed
-  - Keep the HTML structure intact for proper rendering
-  - Test the prompt with a few sample recipients to ensure it generates appropriate emails
-
-- **Custom Instructions**:
-  - Set `CUSTOM_INSTRUCTION` at the top of `sendEmails.ts` or `followUp.ts`
-  - When filled, applies to all generated emails without prompting
-  - Leave empty to enable per-email custom instructions
 
 ## Contributing
 
