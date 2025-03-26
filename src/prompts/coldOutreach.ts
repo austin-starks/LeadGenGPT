@@ -1,4 +1,4 @@
-import moment from "moment";
+import moment from "moment-timezone";
 
 const COLD_OUTREACH_PROMPT = `Today is ${moment()
   .tz("America/New_York")
