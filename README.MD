@@ -2,6 +2,8 @@
 
 **LeadGenGPT** is an open-source AI-powered system for automating cold email outreach and lead generation. It leverages artificial intelligence to craft personalized emails, track responses, and manage follow-ups, helping businesses efficiently connect with potential customers. Built with TypeScript and Node.js, LeadGenGPT integrates with email services, databases, and AI models to streamline the lead generation process.
 
+[Read more about the project here)[https://medium.com/p/6f2e71b83053]
+
 ## Features
 
 - **AI-Generated Personalized Emails**: Automatically create tailored email content for initial outreach.
